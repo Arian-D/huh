@@ -1,0 +1,5 @@
+#+title: TODOs (which I'll never do)
+* String detections
+- [ ] base64 encoded
+- [ ] hashes
+- [ ] File path
