@@ -1,5 +1,12 @@
 #+title: TODOs (which I'll never do)
 * String detections
-- [ ] base64 encoded
+- [X] base64 encoded
 - [ ] hashes
 - [ ] File path
+- [ ] IPv4 and 6 detection
+* General
+- [ ] Clipboard flag
+- [ ] enum type for all these types
+- [ ] Add logging
+- [ ] Run it recursively (maybe in parallel?) to keep checking for more possibilities 
+  
