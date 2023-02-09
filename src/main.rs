@@ -3,14 +3,16 @@ use clap::Parser;
 use regex::Regex;
 use std::io::Cursor;
 use std::io::Read;
-use std::path::PathBuf;
 use std::net::IpAddr;
+use std::path::PathBuf;
+use url::Url;
 
 #[derive(Debug)]
 enum Thing {
     Base64(String),
     File(PathBuf),
     Ip(IpAddr),
+    Uri(Url),
 }
 
 /// Analyze input
@@ -32,7 +34,7 @@ fn main() {
 /// Detect what we're dealing with
 fn detect(text: String) -> Option<Thing> {
     // Check for base64
-    // TODO: Change it to only detection and *not* decoding 
+    // TODO: Change it to only detection and *not* decoding
     let mut reader = Cursor::new(text.clone().into_bytes());
     let mut decoder = read::DecoderReader::new(&mut reader, &general_purpose::STANDARD);
     let mut result = String::new();
@@ -46,10 +48,16 @@ fn detect(text: String) -> Option<Thing> {
         return Some(Thing::Ip(ip));
     }
 
+    // Check for URIs
+    if let Ok(uri) = Url::parse(text.as_str()) {
+        return Some(Thing::Uri(uri));
+    }
+    
+
     None
 }
 
-/// Do things based on the 
+/// Do things based on the
 fn analyze(thing: Thing) {
     println!("{thing:?}")
 }
