@@ -3,6 +3,15 @@ use clap::Parser;
 use regex::Regex;
 use std::io::Cursor;
 use std::io::Read;
+use std::path::PathBuf;
+use std::net::IpAddr;
+
+#[derive(Debug)]
+enum Thing {
+    Base64(String),
+    File(PathBuf),
+    Ip(IpAddr),
+}
 
 /// Analyze input
 #[derive(Parser, Debug)]
@@ -17,27 +26,30 @@ fn main() {
     let args = Args::parse();
 
     // dbg!(args);
-
-    analyze(args.text);
+    detect(args.text).map(analyze);
 }
 
-fn analyze(text: String) {
+/// Detect what we're dealing with
+fn detect(text: String) -> Option<Thing> {
     // Check for base64
-    let mut reader = Cursor::new(text.into_bytes());
+    // TODO: Change it to only detection and *not* decoding 
+    let mut reader = Cursor::new(text.clone().into_bytes());
     let mut decoder = read::DecoderReader::new(&mut reader, &general_purpose::STANDARD);
     let mut result = String::new();
-    //.decoder.read_to_string(&mut result);
     if let Ok(_) = decoder.read_to_string(&mut result) {
-        println!("{result}");
-        return;
+        return Some(Thing::Base64(result));
     }
 
-    // if Regex::new(r"^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$")
-    //     .unwrap()
-    //     .is_match(text.as_str())
-    // {
-    //     println!("It's base64");
-    // } else {
-    //     println!("It's not");
-    // }
+    // Check for IP address
+    let ip = text.parse::<IpAddr>();
+    if let Ok(ip) = ip {
+        return Some(Thing::Ip(ip));
+    }
+
+    None
+}
+
+/// Do things based on the 
+fn analyze(thing: Thing) {
+    println!("{thing:?}")
 }
