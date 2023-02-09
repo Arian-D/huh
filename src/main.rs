@@ -53,11 +53,15 @@ fn detect(text: String) -> Option<Thing> {
         return Some(Thing::Uri(uri));
     }
     
-
+    let path = PathBuf::from(text);
+    if path.exists() {
+        return Some(Thing::File(path));
+    }
     None
 }
 
-/// Do things based on the
+/// Do things based on the input and severity
 fn analyze(thing: Thing) {
-    println!("{thing:?}")
+    println!("{thing:?}");
+    // TODO
 }
