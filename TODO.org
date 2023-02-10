@@ -1,12 +1,35 @@
 #+title: TODOs (which I'll never do)
-* String detections
-- [ ] hashes
-- [ ] File path
-- [X] base64 encoded
-- [X] IPv4 and 6 detection
+#+startup: fold
+
+* Actions
+** TODO IPs
++ [ ] Ignore broadcast and localhost
++ [ ] Reverse DNS lookup
++ [ ] whois
++ [ ] Check online DBs
++ [ ] nmap (when aggressive)
+** TODO Phone number
++ [ ] Check online DBs (numlookup or zlookup) for owner and carrier
++ [ ] Check online DBs for potential scams
+** TODO URIs
+There is /a lot/ to do here. Just to get started I'll cover the basics
+- [ ] whois
+- [ ] Shodan
+- [ ] open ports
+** TODO File path
+If it exsits, do some stuff. Obviously, there's a lot of more to do
+once the =file= type is detected, but that's for later.
+- [ ] If content is not raw bytes run the function recursively on it
+** TODO Hash
+- [ ] Check online databases
+*** 
 * General
-- [ ] Clipboard flag
-- [ ] enum type for all these types
 - [ ] Add logging
+- [ ] Clipboard flag
 - [ ] Run it recursively (maybe in parallel?) to keep checking for more possibilities 
+
+* Implementation notes
+- [X] enum type for all these types
+- [ ] Regex to match most of these
+- [ ] Trait for the =Thing= type
   
