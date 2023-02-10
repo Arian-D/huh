@@ -1,19 +1,12 @@
 use base64::{engine, engine::general_purpose, read, read::DecoderReader};
 use clap::Parser;
+use clap::ValueEnum;
 use regex::Regex;
 use std::io::Cursor;
 use std::io::Read;
 use std::net::IpAddr;
 use std::path::PathBuf;
 use url::Url;
-
-#[derive(Debug)]
-enum Thing {
-    Base64(String),
-    File(PathBuf),
-    Ip(IpAddr),
-    Uri(Url),
-}
 
 /// Analyze input
 #[derive(Parser, Debug)]
@@ -22,14 +15,36 @@ struct Args {
     /// The text to analyze
     #[arg(long)]
     text: String,
+    #[arg(long, default_value_t = Severity::Medium, value_enum)]
+    severity: Severity,
 }
+
+#[derive(ValueEnum, Copy, Clone, Debug, PartialEq, Eq)]
+enum Severity {
+    // Don't publicize, don't upload file; just look without someone knowing you're looking
+    Low,
+    // Look up hashes, look up stuff on online databses, but don't do anything intrusive
+    Medium,
+    // Anything like port scans, vuln scan, and other aggressive methods
+    GoWild,
+}
+
 
 fn main() {
     let args = Args::parse();
-
     // dbg!(args);
     detect(args.text).map(analyze);
 }
+
+#[derive(Debug)]
+enum Thing {
+    Base64(String),
+    File(PathBuf),
+    Ip(IpAddr),
+    Uri(Url),
+    Other(String),
+}
+
 
 /// Detect what we're dealing with
 fn detect(text: String) -> Option<Thing> {
@@ -62,6 +77,23 @@ fn detect(text: String) -> Option<Thing> {
 
 /// Do things based on the input and severity
 fn analyze(thing: Thing) {
-    println!("{thing:?}");
+    println!("We're dealing with a {thing:?}");
+    match thing {
+        Thing::Base64(text) => {
+            detect(text).map(analyze);
+        },
+        Thing::Ip(ip) => {
+            analyze_ip(ip);
+        },
+        other_thing => eprintln!("{other_thing:?} not yet implemented. Sowwy")
+    }
+}
+
+fn analyze_ip(ip: IpAddr) -> Thing {
+    Thing::Other(String::from("Not yet implemented"))
+}
+
+fn analyze_file(file_path: PathBuf) {
+    eprintln!("Not implemented yet bozo")
     // TODO
 }
