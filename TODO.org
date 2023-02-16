@@ -11,15 +11,26 @@
 ** TODO Phone number
 + [ ] Check online DBs (numlookup or zlookup) for owner and carrier
 + [ ] Check online DBs for potential scams
+** TODO email
+- [ ] Check for spam
+- [ ] Check on haveibeenpwned
 ** TODO URIs
 There is /a lot/ to do here. Just to get started I'll cover the basics
 - [ ] whois
+- [ ] Header info (like =curl -I=)
 - [ ] Shodan
+- [ ] Check URI on VT
 - [ ] open ports
 ** TODO File path
 If it exsits, do some stuff. Obviously, there's a lot of more to do
 once the =file= type is detected, but that's for later.
 - [ ] If content is not raw bytes run the function recursively on it
+- [ ] Check file hash on VT
+- [ ] Run analysis on files in directories recursively
+- [ ] Check for file carving
+*** TODO Photos
+- [ ] Check metadata (=exiftools=) and print interesting stuff like
+  location, camera info, or software info (i.e. photoshop, gimp, etc)
 ** TODO Hash
 - [ ] Check online databases
 *** 
@@ -32,4 +43,6 @@ once the =file= type is detected, but that's for later.
 - [X] enum type for all these types
 - [ ] Regex to match most of these
 - [ ] Trait for the =Thing= type
-  
+- [ ] Look into doing the tasks in parallel
+- [ ] Use nix flake to have all dependencies ready
+- [ ] Use github actions to either =nix bundle= or build a docker image
