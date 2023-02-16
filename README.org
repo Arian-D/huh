@@ -1,4 +1,4 @@
 #+title: Huh?
 
-This is my personal analyzer which shows interesting information about
-input.
+This is my personal tool which shows interesting information about
+stuff.
