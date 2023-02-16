@@ -4,8 +4,11 @@ use clap::ValueEnum;
 use regex::Regex;
 use std::io::Cursor;
 use std::io::Read;
+use std::io::Error;
 use std::net::IpAddr;
 use std::path::PathBuf;
+use std::process::Command;
+use std::str::from_utf8;
 use url::Url;
 
 /// Analyze input
@@ -68,6 +71,7 @@ fn detect(text: String) -> Option<Thing> {
         return Some(Thing::Uri(uri));
     }
     
+    // Check for files
     let path = PathBuf::from(text);
     if path.exists() {
         return Some(Thing::File(path));
@@ -85,6 +89,9 @@ fn analyze(thing: Thing) {
         Thing::Ip(ip) => {
             analyze_ip(ip);
         },
+        Thing::File(path) => {
+            analyze_file(path);
+        }
         other_thing => eprintln!("{other_thing:?} not yet implemented. Sowwy")
     }
 }
@@ -93,7 +100,28 @@ fn analyze_ip(ip: IpAddr) -> Thing {
     Thing::Other(String::from("Not yet implemented"))
 }
 
+/// Analyze file
 fn analyze_file(file_path: PathBuf) {
-    eprintln!("Not implemented yet bozo")
+    let output = Command::new("file")
+        .arg("--brief")
+        .arg(file_path)
+        .output()
+        .unwrap()
+        .stdout;
+    let file_type = from_utf8(&output).unwrap();
+    println!("{file_type}");
     // TODO
+}
+
+/// Incomplete list of filetypes as a FileType
+enum FileType {
+    Pdf,
+    Png,
+    Mp4,
+}
+
+/// Inform the user of what is happening; this is very likely to
+/// change from a simple println!
+fn inform(information: String) {
+    println!("→ {information}")
 }
