@@ -10,6 +10,7 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::str::from_utf8;
 use url::Url;
+use reqwest::blocking::get;
 
 /// Analyze input
 #[derive(Parser, Debug)]
@@ -43,6 +44,7 @@ fn main() {
 enum Thing {
     Base64(String),
     File(PathBuf),
+    Email(String),
     Ip(IpAddr),
     Uri(Url),
     Other(String),
@@ -113,7 +115,14 @@ fn analyze_file(file_path: PathBuf) {
     // TODO
 }
 
-/// Incomplete list of filetypes as a FileType
+fn analyze_email(email: String) {
+    // emailrep.io
+    if let Ok(resp) = get(format!("https://emailrep.io/{email}")) {
+        println!("{}", resp.text().unwrap());
+    }
+}
+
+/// incomplete list of filetypes as a FileType
 enum FileType {
     Pdf,
     Png,
