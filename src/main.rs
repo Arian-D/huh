@@ -9,8 +9,10 @@ use std::net::IpAddr;
 use std::path::PathBuf;
 use std::process::Command;
 use std::str::from_utf8;
+use std::collections::HashMap;
 use url::Url;
 use reqwest::blocking::get;
+use reqwest::blocking::Client;
 
 /// Analyze input
 #[derive(Parser, Debug)]
@@ -33,6 +35,7 @@ enum Severity {
     GoWild,
 }
 
+static USER_AGENT: &str = "some-bot/1.2.3";
 
 fn main() {
     let args = Args::parse();
@@ -74,10 +77,16 @@ fn detect(text: String) -> Option<Thing> {
     }
     
     // Check for files
-    let path = PathBuf::from(text);
+    let path = PathBuf::from(text.clone());
     if path.exists() {
         return Some(Thing::File(path));
     }
+
+    let email_regex = Regex::new(r"(?i-u)\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}\b").unwrap();
+    if let Some(email) = email_regex.find(text.as_str()) {
+        return Some(Thing::Email(String::from(email.as_str())));
+    }
+    
     None
 }
 
@@ -94,12 +103,22 @@ fn analyze(thing: Thing) {
         Thing::File(path) => {
             analyze_file(path);
         }
+        Thing::Email(email) => {
+            analyze_email(email);
+        }
         other_thing => eprintln!("{other_thing:?} not yet implemented. Sowwy")
     }
 }
 
 fn analyze_ip(ip: IpAddr) -> Thing {
     Thing::Other(String::from("Not yet implemented"))
+}
+
+/// incomplete list of filetypes as a FileType
+enum FileType {
+    Pdf,
+    Png,
+    Mp4,
 }
 
 /// Analyze file
@@ -115,18 +134,31 @@ fn analyze_file(file_path: PathBuf) {
     // TODO
 }
 
+/// Checks email on some online databases
 fn analyze_email(email: String) {
     // emailrep.io
-    if let Ok(resp) = get(format!("https://emailrep.io/{email}")) {
+    let emailrep_request = Client::builder()
+        .user_agent(USER_AGENT)
+        .build()
+        .unwrap()
+        .get(format!("https://emailrep.io/{email}"))
+        .send();
+    if let Ok(resp) = emailrep_request {
         println!("{}", resp.text().unwrap());
     }
-}
+    // eva.pingutil.com
+    let eva_request = Client::builder()
+        .user_agent(USER_AGENT)
+        .danger_accept_invalid_certs(true)
+        .build()
+        .unwrap()
+        .get(format!("https://api.eva.pingutil.com/email?email={email}"))
+        .send();
+    if let Ok(resp) = eva_request {
+        println!("{}", resp.text().unwrap());
+    }
+    // TODO: Parse results
 
-/// incomplete list of filetypes as a FileType
-enum FileType {
-    Pdf,
-    Png,
-    Mp4,
 }
 
 /// Inform the user of what is happening; this is very likely to
