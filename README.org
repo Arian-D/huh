@@ -2,3 +2,6 @@
 
 This is my personal tool which shows interesting information about
 stuff.
+
+It's a WIP, so don't expect it to work. I'm only making it public to
+take advantage of the free GitHub action goodies 🙂.
