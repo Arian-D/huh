@@ -2,17 +2,17 @@ use base64::{engine, engine::general_purpose, read, read::DecoderReader};
 use clap::Parser;
 use clap::ValueEnum;
 use regex::Regex;
+use reqwest::blocking::get;
+use reqwest::blocking::Client;
+use std::collections::HashMap;
 use std::io::Cursor;
-use std::io::Read;
 use std::io::Error;
+use std::io::Read;
 use std::net::IpAddr;
 use std::path::PathBuf;
 use std::process::Command;
 use std::str::from_utf8;
-use std::collections::HashMap;
 use url::Url;
-use reqwest::blocking::get;
-use reqwest::blocking::Client;
 
 /// Analyze input
 #[derive(Parser, Debug)]
@@ -53,7 +53,6 @@ enum Thing {
     Other(String),
 }
 
-
 /// Detect what we're dealing with
 fn detect(text: String) -> Option<Thing> {
     // Check for base64
@@ -75,18 +74,20 @@ fn detect(text: String) -> Option<Thing> {
     if let Ok(uri) = Url::parse(text.as_str()) {
         return Some(Thing::Uri(uri));
     }
-    
+
     // Check for files
     let path = PathBuf::from(text.clone());
     if path.exists() {
         return Some(Thing::File(path));
     }
 
+    // Check for email
     let email_regex = Regex::new(r"(?i-u)\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}\b").unwrap();
     if let Some(email) = email_regex.find(text.as_str()) {
         return Some(Thing::Email(String::from(email.as_str())));
     }
-    
+
+    // TODO: Phone number
     None
 }
 
@@ -96,17 +97,17 @@ fn analyze(thing: Thing) {
     match thing {
         Thing::Base64(text) => {
             detect(text).map(analyze);
-        },
+        }
         Thing::Ip(ip) => {
             analyze_ip(ip);
-        },
+        }
         Thing::File(path) => {
             analyze_file(path);
         }
         Thing::Email(email) => {
             analyze_email(email);
         }
-        other_thing => eprintln!("{other_thing:?} not yet implemented. Sowwy")
+        other_thing => eprintln!("{other_thing:?} not yet implemented. Sowwy"),
     }
 }
 
@@ -115,23 +116,48 @@ fn analyze_ip(ip: IpAddr) -> Thing {
 }
 
 /// incomplete list of filetypes as a FileType
+#[derive(Debug)]
 enum FileType {
     Pdf,
     Png,
+    Jpg,
     Mp4,
+    Unknown(String),
 }
 
-/// Analyze file
+/// Analyze file (WIP)
 fn analyze_file(file_path: PathBuf) {
+    // TODO: Move the detection to another function
     let output = Command::new("file")
         .arg("--brief")
-        .arg(file_path)
+        .arg(file_path.clone())
         .output()
         .unwrap()
         .stdout;
     let file_type = from_utf8(&output).unwrap();
-    println!("{file_type}");
-    // TODO
+    println!("Actual file type → \"{file_type}\" but I won't use it");
+
+    println!("TODO: Virus total of the hash (or content if aggressive/public)");
+    if let Some(extension) = file_path.extension() {
+        let extension = format!("{extension:?}");
+        let file_type: FileType = match extension.as_str() {
+            "png" => FileType::Png,
+            "jpg" | "jpeg" => FileType::Jpg,
+            _ => FileType::Unknown(extension),
+        };
+
+
+        println!("TODO: file carving with binwalk");
+        match file_type {
+            FileType::Png => {
+                println!("TODO: Look at exif data");
+                
+            }
+            other => {
+                println!("TODO: Implement analysis for {other:?}");
+            }
+        }
+    }
 }
 
 /// Checks email on some online databases
@@ -158,7 +184,6 @@ fn analyze_email(email: String) {
         println!("{}", resp.text().unwrap());
     }
     // TODO: Parse results
-
 }
 
 /// Inform the user of what is happening; this is very likely to
