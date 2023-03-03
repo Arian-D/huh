@@ -13,6 +13,8 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::str::from_utf8;
 use url::Url;
+use serde_json::{from_str, Value, json};
+use serde::{Serialize, Deserialize};
 
 /// Analyze input
 #[derive(Parser, Debug)]
@@ -111,8 +113,24 @@ fn analyze(thing: Thing) {
     }
 }
 
-fn analyze_ip(ip: IpAddr) -> Thing {
-    Thing::Other(String::from("Not yet implemented"))
+#[derive(Serialize, Deserialize, Debug)]
+struct IPGeoResp {
+    isp: String,
+    org: String,
+}
+
+fn analyze_ip(ip: IpAddr) {
+    if ip.is_loopback() || ip.is_multicast() || ip.is_unspecified() {
+        println!("Don't know what to do with {ip}");
+    }
+    // TODO: nmap etc
+    // https://api.techniknews.net/ipgeo
+    let resp = get(format!("https://api.techniknews.net/ipgeo/{ip}"))
+        .and_then(|r| r.json::<IPGeoResp>());
+    if let Ok(resp) = resp {
+        println!("ISP: {}", resp.isp);
+        println!("Organization: {}", resp.org);
+    }
 }
 
 /// incomplete list of filetypes as a FileType
@@ -150,7 +168,7 @@ fn analyze_file(file_path: PathBuf) {
         println!("TODO: file carving with binwalk");
         match file_type {
             FileType::Png => {
-                println!("TODO: Look at exif data");
+                println!("TODO: Look at exif data and steg");
                 
             }
             other => {
@@ -184,10 +202,4 @@ fn analyze_email(email: String) {
         println!("{}", resp.text().unwrap());
     }
     // TODO: Parse results
-}
-
-/// Inform the user of what is happening; this is very likely to
-/// change from a simple println!
-fn inform(information: String) {
-    println!("→ {information}")
 }

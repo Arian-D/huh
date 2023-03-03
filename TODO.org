@@ -12,8 +12,7 @@
 + [ ] Check online DBs (numlookup or zlookup) for owner and carrier
 + [ ] Check online DBs for potential scams
 ** TODO email
-- [ ] Check for spam
-- [ ] Check on haveibeenpwned
+- [X] Check for spam
 ** TODO URIs
 There is /a lot/ to do here. Just to get started I'll cover the basics
 - [ ] whois
@@ -46,3 +45,4 @@ once the =file= type is detected, but that's for later.
 - [ ] Look into doing the tasks in parallel
 - [ ] Use nix flake to have all dependencies ready
 - [ ] Use github actions to either =nix bundle= or build a docker image
+- [ ] Use modules, you brainlet idiot
